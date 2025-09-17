@@ -1,0 +1,9 @@
+# Конфигурация для PythonAnywhere
+# Добавьте эти переменные в файл .env на сервере:
+
+BOT_TOKEN=8241308055:AAFq9lzfXAQMjYODRdCLBq1EL4gg50T3noo
+SPREADSHEET_ID=1TeakOaFhBpBekCDZNjGdyJ6uXh51vrdDMsQHrTGA7CI
+SHEET_NAME=Лист1
+GOOGLE_PROJECT_ID=spheric-algebra-465618-t4
+GOOGLE_CLIENT_EMAIL=bot-sheets@spheric-algebra-465618-t4.iam.gserviceaccount.com
+# GOOGLE_PRIVATE_KEY - добавьте через интерфейс или .env файл
