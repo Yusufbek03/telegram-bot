@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.DS_Store
+*.log
+keys.json
+.env
+private_key.txt
+.idea/
