@@ -45,6 +45,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 raw_sheet_id = os.getenv("SPREADSHEET_ID")
 SPREADSHEET_ID = _normalize_spreadsheet_id(raw_sheet_id or "")
 SHEET_NAME = os.getenv("SHEET_NAME", "")
+CHANNEL_ID = os.getenv("CHANNEL_ID", "@topicnowbot")
 
 # Google Service Account credentials from environment
 GOOGLE_PRIVATE_KEY = os.getenv("GOOGLE_PRIVATE_KEY", "")
@@ -206,6 +207,32 @@ def _append_to_sheet(payload: dict):
     except Exception as e:
         return False, str(e)
 
+async def send_notification_to_channel(context: ContextTypes.DEFAULT_TYPE, payload: dict):
+    """
+    Kanalga yangi foydalanuvchi haqida xabar yuborish.
+    """
+    try:
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        notification_text = (
+            "🔔 Yangi foydalanuvchi qo'shildi:\n\n"
+            f"👤 FIO: {payload.get('name', 'N/A')}\n"
+            f"📞 Номер: {payload.get('phone', 'N/A')}\n"
+            f"🏠 Адрес: {payload.get('address', 'N/A')}\n"
+            f"🏷 Никнайм: @{payload.get('username', 'N/A')}\n"
+            f"🆔 ИД номер: {payload.get('user_id', 'N/A')}\n"
+            f"⏰ Время: {current_time}\n\n"
+            "✅ Человек занесен в базу данных"
+        )
+        
+        await context.bot.send_message(
+            chat_id=CHANNEL_ID,
+            text=notification_text
+        )
+        return True
+    except Exception as e:
+        print(f"Kanalga xabar yuborishda xatolik: {e}")
+        return False
+
 # ── /start ───────────────────────────────────────────────────────────────────
 UZ_ONLY_NOTE = (
     "⚠️ Iltimos, faqat **o‘zbek tilida (lotin yozuvida)** yozing.\n"
@@ -317,7 +344,12 @@ async def on_confirm_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE)
         }
         ok, err = _append_to_sheet(payload)
         if ok:
-            await query.edit_message_text("✅ Saqlandi! Yangi yozuv uchun /start yuboring.")  # type: ignore
+            # Ma'lumotlar muvaffaqiyatli saqlangach, kanalga xabar yuborish
+            notification_sent = await send_notification_to_channel(context, payload)
+            if notification_sent:
+                await query.edit_message_text("✅ Saqlandi va kanal xabardor qilindi! Yangi yozuv uchun /start yuboring.")  # type: ignore
+            else:
+                await query.edit_message_text("✅ Saqlandi, lekin kanalga xabar yuborishda muammo. Yangi yozuv uchun /start yuboring.")  # type: ignore
         else:
             await query.edit_message_text(  # type: ignore
                 f"⚠️ Saqlashda xatolik.\nSabab: {err}\n"
